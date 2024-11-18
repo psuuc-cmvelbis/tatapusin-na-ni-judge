@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+	<!-- #
+     -> the lilyGo will send its location on bootup
+     -> db : collection_point
+     -> note: yung cp_name hardcoded sa lilyGo same with esp32cam
+     -> added action button
+      note: disable -> cp_add_state = 'no' (element will be hidden)
+            if cp_add_state = 'yes' (show element)
+
+        if edit button is pressed accidentally u need to refresh the browser to add/enable collection point      
+    -->
+<head>
+	<title>ADMIN</title>
+
+	<!-- Meta -->
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="shortcut icon" href="favicon.ico">
+
+	<!-- FontAwesome JS-->
+	<script defer src="assets/plugins/fontawesome/js/all.min.js"></script>
+
+	<!-- App CSS -->
+	<link id="theme-style" rel="stylesheet" href="assets/css/portal.css">
+
+	<style>
+		#spinner-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100vw;
+			height: 100vh;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			z-index: 9999;
+		}
+	  
+		.bokeh-background {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 20%, rgba(173, 216, 230, 0.6) 30%, rgba(135, 206, 250, 0.4) 50%);
+			backdrop-filter: blur(10px);
+		}
+	  
+		.spinner-wrapper {
+			position: relative;
+			z-index: 10000;
+		}
+	  
+		.spinner-border {
+			width: 5rem;
+			height: 5rem;
+		}
+	  </style>
+	  
+    
+</head>
+
+<body class="app">
+	<header class="app-header fixed-top">
+		<div class="app-header-inner">
+			<div class="container-fluid py-2">
+				<div class="app-header-content">
+					<div class="row justify-content-between align-items-center">
+
+						<div class="col-auto">
+							<a id="sidepanel-toggler" class="sidepanel-toggler d-inline-block d-xl-none" href="#">
+								<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"
+									role="img">
+									<title>Menu</title>
+									<path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10"
+										stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path>
+								</svg>
+							</a>
+						</div><!--//col-->
+
+
+
+						<div class="app-utilities col-auto">
+							<div class="app-utility-item app-notifications-dropdown dropdown">
+
+
+
+							</div><!--//app-utility-item-->
+
+							<div class="app-utility-item app-user-dropdown dropdown">
+								<a class="dropdown-toggle" id="user-dropdown-toggle" data-bs-toggle="dropdown" href="#"
+									role="button" aria-expanded="false"><img src="assets/images/user.png"
+										alt="user profile"></a>
+								
+<ul class="dropdown-menu" aria-labelledby="user-dropdown-toggle">
+
+	<li><a href="#" id="logout-btn" class="dropdown-item" href="login.html">Log Out</a></li>
+
+</ul>
+							</div><!--//app-user-dropdown-->
+						</div><!--//app-utilities-->
+					</div><!--//row-->
+				</div><!--//app-header-content-->
+			</div><!--//container-fluid-->
+		</div><!--//app-header-inner-->
+		<div id="app-sidepanel" class="app-sidepanel">
+			<div id="sidepanel-drop" class="sidepanel-drop"></div>
+			<div class="sidepanel-inner d-flex flex-column">
+				<a href="#" id="sidepanel-close" class="sidepanel-close d-xl-none">&times;</a>
+				<div class="app-branding">
+					<a class="app-logo" href="index.html"><img class="logo-icon me-2" src="assets/images/app-logo.svg"
+							alt="logo"><span class="logo-text">ADMIN</span></a>
+
+				</div><!--//app-branding-->
+
+				<nav id="app-nav-main" class="app-nav app-nav-main flex-grow-1">
+					<ul class="app-menu list-unstyled accordion" id="menu-accordion">
+						<li class="nav-item">
+							<!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+							<a class="nav-link" href="index.html">
+								<span class="nav-icon">
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-house-door"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd"
+											d="M7.646 1.146a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 .146.354v7a.5.5 0 0 1-.5.5H9.5a.5.5 0 0 1-.5-.5v-4H7v4a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5v-7a.5.5 0 0 1 .146-.354l6-6zM2.5 7.707V14H6v-4a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v4h3.5V7.707L8 2.207l-5.5 5.5z" />
+										<path fill-rule="evenodd"
+											d="M13 2.5V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z" />
+									</svg>
+								</span>
+								<span class="nav-link-text">Dashboard</span>
+							</a><!--//nav-link-->
+						</li><!--//nav-item-->
+						<li class="nav-item">
+							<!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+							<a class="nav-link" href="maps.html">
+								<span class="nav-icon">
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-folder"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path
+											d="M9.828 4a3 3 0 0 1-2.12-.879l-.83-.828A1 1 0 0 0 6.173 2H2.5a1 1 0 0 0-1 .981L1.546 4h-1L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3v1z" />
+										<path fill-rule="evenodd"
+											d="M13.81 4H2.19a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zM2.19 3A2 2 0 0 0 .198 5.181l.637 7A2 2 0 0 0 2.826 14h10.348a2 2 0 0 0 1.991-1.819l.637-7A2 2 0 0 0 13.81 3H2.19z" />
+									</svg>
+								</span>
+								<span class="nav-link-text">Maps</span>
+							</a><!--//nav-link-->
+						</li><!--//nav-item-->
+
+						<li class="nav-item has-submenu">
+							<a class="nav-link submenu-toggle" href="#" data-bs-toggle="collapse"
+								data-bs-target="#submenu-1" aria-expanded="false" aria-controls="submenu-1">
+								<span class="nav-icon">
+									<!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-files"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd"
+											d="M4 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4z" />
+										<path
+											d="M6 0h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2v-1a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1H4a2 2 0 0 1 2-2z" />
+									</svg>
+								</span>
+								<span class="nav-link-text">Collection Request</span>
+								<span class="submenu-arrow">
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-down"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd"
+											d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+									</svg>
+								</span><!--//submenu-arrow-->
+								
+							</a><!--//nav-link-->
+							<div id="submenu-1" class="collapse submenu submenu-1" data-bs-parent="#menu-accordion">
+								<ul class="submenu-list list-unstyled">
+									<li class="submenu-item"><a class="submenu-link" href="approve.html">Approval
+											Request</a></li>
+									<li class="submenu-item"><a class="submenu-link" href="logs.html">Logs</a></li>
+								</ul>
+							</div>
+						</li><!--//nav-item-->
+						<li class="nav-item has-submenu"></li>
+							<a class="nav-link submenu-toggle active" href="#" data-bs-toggle="collapse"
+								data-bs-target="#submenu-2" aria-expanded="false" aria-controls="submenu-2">
+								<span class="nav-icon">
+									<!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-files"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd"
+											d="M4 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4z" />
+										<path
+											d="M6 0h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2v-1a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1H4a2 2 0 0 1 2-2z" />
+									</svg>
+								</span>
+								<span class="nav-link-text">Collection Point</span>
+								<span class="submenu-arrow">
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-down"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd"
+											d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+									</svg>
+								</span><!--//submenu-arrow-->
+								
+							</a><!--//nav-link-->
+							<div id="submenu-2" class="collapse submenu submenu-2 show" data-bs-parent="#menu-accordion">
+								<ul class="submenu-list list-unstyled">
+									<li class="submenu-item"><a class="submenu-link " href="getcurrentstatus.html">Current Status</a></li>
+									<li class="submenu-item"><a class="submenu-link active" href="addcollection.html">Add Collection Point</a></li>
+								</ul>
+							</div>
+						</li><!--//nav-item-->
+						<li class="nav-item has-submenu"></li>
+							<a class="nav-link submenu-toggle" href="#" data-bs-toggle="collapse"
+								data-bs-target="#submenu-3" aria-expanded="false" aria-controls="submenu-3">
+								<span class="nav-icon">
+									<!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-files"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd"
+											d="M4 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4z" />
+										<path
+											d="M6 0h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2v-1a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1H4a2 2 0 0 1 2-2z" />
+									</svg>
+								</span>
+								<span class="nav-link-text">User</span>
+								<span class="submenu-arrow">
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-down"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd"
+											d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+									</svg>
+								</span><!--//submenu-arrow-->
+								
+							</a><!--//nav-link-->
+							<div id="submenu-3" class="collapse submenu submenu-3" data-bs-parent="#menu-accordion">
+								<ul class="submenu-list list-unstyled">
+									<li class="submenu-item"><a class="submenu-link" href="useraccount.html">Account</a></li>
+									<li class="submenu-item"><a class="submenu-link" href="userreports.html">Reports</a></li>
+								</ul>
+							</div>
+						</li><!--//nav-item-->
+						<li class="nav-item has-submenu"></li>
+							<a class="nav-link submenu-toggle" href="#" data-bs-toggle="collapse"
+								data-bs-target="#submenu-4" aria-expanded="false" aria-controls="submenu-4">
+								<span class="nav-icon">
+									<!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-files"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd"
+											d="M4 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4z" />
+										<path
+											d="M6 0h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2v-1a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1H4a2 2 0 0 1 2-2z" />
+									</svg>
+								</span>
+								<span class="nav-link-text">Collector</span>
+								<span class="submenu-arrow">
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-down"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd"
+											d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+									</svg>
+								</span><!--//submenu-arrow-->
+								
+							</a><!--//nav-link-->
+							<div id="submenu-4" class="collapse submenu submenu-4" data-bs-parent="#menu-accordion">
+								<ul class="submenu-list list-unstyled">
+									<li class="submenu-item"><a class="submenu-link" href="addcollector.html">Account</a></li>
+									<li class="submenu-item"><a class="submenu-link" href="collectorschedule.html">Schedule</a></li>
+								</ul>
+							</div>
+						</li><!--//nav-item-->
+					</ul><!--//app-menu-->
+				</nav><!--//app-nav-->			
+			</div><!--//sidepanel-inner-->
+		</div><!--//app-sidepanel-->
+	</header><!--//app-header-->
+<!--//-------------------------------------------------#########################----------------------------------------------------------------------------->
+    <div class="app-wrapper">
+        <div class="app-content pt-3 p-md-3 p-lg-4">
+            <div class="container-xl">
+                <!-- Page Title -->
+                <div class="row g-3 mb-4 align-items-center justify-content-between">
+                    <div class="col-auto">
+                        <h1 class="app-page-title mb-0">Add Collection Points</h1>
+                    </div>
+                </div>
+    
+                <!-- Table of Existing Collection Points -->
+                <div class="row">
+                    <div class="col-12">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Collection Point ID</th>
+                                    <th>Location</th>
+                                    <th>Image</th>
+                                    <th>Longitude</th>
+                                    <th>Latitude</th>
+                                    <th>Actions</th> <!-- New Actions Column -->
+                                </tr>
+                            </thead>
+                            <tbody id="collectionPointsTable">
+                                <!-- Table rows will be dynamically populated here -->
+                            </tbody>
+                        </table>                        
+                    </div>
+                </div>
+    
+                <!-- Add New Collection Point Section -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h2 class="mb-3">Add New Collection Point</h2>
+                        <form id="add-collection-point-form">
+                            <div class="mb-3">
+                                <label for="collectionPoint" class="form-label">Collection Point</label>
+                                <select class="form-select" id="collectionPoint" name="collectionPoint" required>
+                                    <option value="" disabled selected>Select a collection point</option>
+                                </select>
+                            </div>
+    
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="location" name="location" placeholder="Enter location" required>
+                            </div>
+    
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Upload Image</label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*" >
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" id = "submit-btn">Add Collection Point</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+			<div id="spinner-overlay" class="d-none">
+				<div class="spinner-container">
+					<div class="spinner-border text-primary" role="status">
+						<span class="visually-hidden">Loading...</span>
+					</div>
+					<div class="mt-3">Please Wait...</div>
+				</div>
+			</div>
+
+
+<style>
+    /* Spinner overlay styles */
+    #spinner-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: rgba(255, 255, 255, 0.8); /* Blur background */
+        backdrop-filter: blur(5px); /* Blur effect */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .spinner-container {
+        text-align: center;
+    }
+</style>
+
+        </div><!--//app-content-->
+
+		
+    </div><!--//app-wrapper-->
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script>
+        const { createClient } = supabase;
+        const _supabase = createClient('https://uiciowpyxfawjvaddivu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY2lvd3B5eGZhd2p2YWRkaXZ1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNzE0MDQyMCwiZXhwIjoyMDQyNzE2NDIwfQ.kR8PsVyqtW0QTJoFjFq6aiXU-iq0y3alXfJQIRMVgBw');
+    
+
+        async function fetchCollectionPoints() {
+
+const { data: collectionPoints, error: cpError } = await _supabase
+    .from('collection_point')
+    .select('cp_name, cp_address, cp_lat, cp_long, cp_add_state, image_url')
+    .order('cp_name', {ascending: true});
+
+if (cpError) {
+    console.error('Error fetching collection points:', cpError);
+    return;
+}
+
+const tableBody = document.getElementById('collectionPointsTable');
+tableBody.innerHTML = ''; 
+
+collectionPoints.forEach(row => {
+const newRow = document.createElement('tr');
+let imageUrl = '';
+
+if (row.cp_add_state === 'no') {
+    newRow.classList.add('d-none'); 
+    imageUrl = 'https://media.istockphoto.com/id/1409329028/vector/no-picture-available-placeholder-thumbnail-icon-illustration-design.jpg?s=612x612&w=0&k=20&c=_zOuJu755g2eEUioiOUdz_mHKJQJn-tDgIAhQzyeKUQ='; 
+} 
+
+else if (row.cp_add_state === 'yes') {
+    newRow.classList.add('table-success'); 
+
+    imageUrl = row.image_url || 'https://media.istockphoto.com/id/1409329028/vector/no-picture-available-placeholder-thumbnail-icon-illustration-design.jpg?s=612x612&w=0&k=20&c=_zOuJu755g2eEUioiOUdz_mHKJQJn-tDgIAhQzyeKUQ=';
+}
+
+newRow.innerHTML = `
+    <td>${row.cp_name}</td>
+    <td>${row.cp_address}</td>
+    <td><img src="${imageUrl}" alt="${row.cp_name} Image" width="50"></td>
+    <td>${row.cp_long}</td>
+    <td>${row.cp_lat}</td>
+    <td>
+        <button class="btn btn-warning btn-sm edit-btn" data-cpname="${row.cp_name}">Edit</button>
+        <button class="btn btn-danger btn-sm delete-btn" data-cpname="${row.cp_name}">Delete</button>
+    </td>
+`;
+
+if (row.cp_add_state === 'yes') {
+    tableBody.appendChild(newRow);
+}
+});
+
+document.querySelectorAll('.edit-btn').forEach(button => {
+    button.addEventListener('click', handleEdit);
+});
+document.querySelectorAll('.delete-btn').forEach(button => {
+    button.addEventListener('click', handleDelete);
+});
+}
+
+async function handleEdit(event) {
+const collectionPointName = event.target.getAttribute('data-cpname');
+
+const { data: collectionPoint, error } = await _supabase
+    .from('collection_point')
+    .select('cp_name, cp_address, image_url')
+    .eq('cp_name', collectionPointName)
+    .single();
+
+if (error) {
+    console.error('Error fetching collection point:', error);
+    return;
+}
+
+document.getElementById('collectionPoint').value = collectionPoint.cp_name;
+document.getElementById('location').value = collectionPoint.cp_address;
+
+document.getElementById('collectionPoint').disabled = true;
+
+const submitButton = document.getElementById('submit-btn');
+submitButton.textContent = 'Update Collection Point';
+}
+
+async function handleDelete(event) {
+const collectionPointName = event.target.getAttribute('data-cpname');
+
+const confirmDelete = confirm(`Are you sure you want to delete the collection point "${collectionPointName}"?`);
+if (!confirmDelete) return;
+
+try {
+
+    const { error } = await _supabase
+        .from('collection_point')
+        .update({ cp_add_state: 'no' }) 
+        .eq('cp_name', collectionPointName);
+
+    if (error) {
+        console.error('Error updating collection point state:', error);
+        return;
+    }
+
+    alert('Collection point disabled successfully!');
+    fetchCollectionPoints(); 
+    populateCollectionPointDropdown(); 
+
+} catch (err) {
+    console.error('Error during the state update process:', err);
+}
+}
+
+document.addEventListener('DOMContentLoaded', fetchCollectionPoints);
+
+async function populateCollectionPointDropdown() {
+const { data, error } = await _supabase
+    .from('collection_point')
+    .select('cp_name, cp_add_state')
+    .order('cp_name', {ascending: true});
+
+if (error) {
+    console.error('Error fetching collection points:', error);
+    return;
+}
+
+const selectElement = document.getElementById('collectionPoint');
+selectElement.innerHTML = '<option value="" disabled selected>Select a collection point</option>'; 
+
+data.forEach(row => {
+    const option = document.createElement('option');
+    option.value = row.cp_name;
+    option.textContent = row.cp_name;
+
+    if (row.cp_add_state === 'yes') {
+        option.disabled = true;
+        option.style.color = 'gray'; 
+    }
+
+    selectElement.appendChild(option);
+});
+}
+
+document.addEventListener('DOMContentLoaded', populateCollectionPointDropdown);
+
+document.addEventListener('DOMContentLoaded', fetchCollectionPoints);
+
+document.getElementById('add-collection-point-form').addEventListener('submit', async function (e) {
+e.preventDefault();
+
+const selectedCollectionPoint = document.getElementById('collectionPoint').value;
+const location = document.getElementById('location').value;
+const imageFile = document.getElementById('image').files[0]; 
+
+document.getElementById('spinner-overlay').classList.remove('d-none');
+
+if (!selectedCollectionPoint) {
+    alert('Please select a collection point.');
+    document.getElementById('spinner-overlay').classList.add('d-none'); 
+    return;
+}
+
+try {
+
+    const { data: currentData, error: fetchError } = await _supabase
+        .from('collection_point')
+        .select('image_url')
+        .eq('cp_name', selectedCollectionPoint)
+        .single();
+
+    if (fetchError) {
+        console.error('Error fetching current image URL:', fetchError);
+        document.getElementById('spinner-overlay').classList.add('d-none');
+        return;
+    }
+
+    let imageUrl = currentData.image_url;
+
+    if (imageFile) {
+        const fileName = `${selectedCollectionPoint}-${Date.now()}.png`;
+        const { data: uploadData, error: uploadError } = await _supabase
+            .storage
+            .from('images')
+            .upload(`public/${fileName}`, imageFile);
+
+        if (uploadError) {
+            console.error('Error uploading image:', uploadError);
+            document.getElementById('spinner-overlay').classList.add('d-none');
+            return;
+        }
+
+        const { data: publicData, error: urlError } = _supabase
+            .storage
+            .from('images')
+            .getPublicUrl(`public/${fileName}`);
+
+        if (urlError) {
+            console.error('Error getting public URL:', urlError);
+            document.getElementById('spinner-overlay').classList.add('d-none');
+            return;
+        }
+
+        imageUrl = publicData.publicUrl;
+    }
+
+    const updateData = {
+        cp_address: location,
+        image_url: imageUrl,
+        cp_add_state: 'yes'  
+    };
+
+    const { error: updateError } = await _supabase
+        .from('collection_point')
+        .update(updateData)
+        .eq('cp_name', selectedCollectionPoint);
+
+    if (updateError) {
+        console.error('Error updating collection point:', updateError);
+        document.getElementById('spinner-overlay').classList.add('d-none');
+        return;
+    }
+
+    alert('Collection point updated successfully!');
+    fetchCollectionPoints(); 
+    populateCollectionPointDropdown(); 
+
+    document.getElementById('collectionPoint').disabled = false;
+    document.getElementById('add-collection-point-form').reset();
+
+    const submitButton = document.getElementById('submit-btn');
+    submitButton.textContent = 'Add Collection Point';
+
+} catch (err) {
+    console.error('Error during the process:', err);
+} finally {
+    document.getElementById('spinner-overlay').classList.add('d-none');
+}
+});
+
+
+    </script>
+    
+
+		<!-- Javascript -->
+		<script src="assets/plugins/popper.min.js"></script>
+		<script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+
+
+		<!-- Page Specific JS -->
+		<script src="assets/js/app.js"></script>
+		<script>
+
+			document.getElementById('logout-btn').addEventListener('click', async function () {
+				const { error } = await _supabase.auth.signOut();
+				if (error) {
+					console.error('Error logging out:', error.message);
+					alert('Logout failed. Please try again.');
+				} else {
+					localStorage.removeItem('supabase.auth.token');  
+					window.location.href = '../user/login.html';  
+					console.log("User logged out successfully");
+				}
+			});
+			
+			</script>
+</body>
+
+</html>

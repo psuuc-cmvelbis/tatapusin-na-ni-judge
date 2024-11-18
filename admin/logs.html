@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>ADMIN</title>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="shortcut icon" href="favicon.ico">
+
+	<script defer src="assets/plugins/fontawesome/js/all.min.js"></script>
+
+	<link id="theme-style" rel="stylesheet" href="assets/css/portal.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+	<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.0.0"></script>
+</head>
+<style>
+	.view-button {
+		background-color: #09c003;
+		/* Blue background */
+		color: #fff;
+		/* White text */
+		border: none;
+		padding: 3px 12px;
+		/* Adjust padding for button size */
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 14px;
+		transition: background-color 0.3s ease, transform 0.2s ease;
+		/* Smooth transitions */
+	}
+
+	.view-button:hover {
+		background-color: #4aaf60;
+		/* Darker blue on hover */
+		transform: scale(1.05);
+		/* Slightly larger on hover */
+	}
+
+	.view-button:active {
+		background-color: #03972371;
+		/* Even darker blue on click */
+		transform: scale(0.98);
+		/* Slightly smaller on click */
+	}
+
+	.popup-overlay {
+		display: none;
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0, 0, 0, 0.7);
+		align-items: center;
+		justify-content: center;
+		z-index: 1000;
+	}
+
+	.popup-content {
+		position: relative;
+		background-color: #fff;
+		padding: 10px;
+		border-radius: 8px;
+		max-width: 700px;
+		/* Adjusted for a smaller width */
+		max-height: 700px;
+		/* Adjusted for a smaller height */
+		box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+		text-align: center;
+	}
+
+	#popup-image {
+		max-width: 100%;
+		max-height: 100%;
+		border-radius: 4px;
+	}
+
+	.close-button {
+		position: absolute;
+		top: 5px;
+		right: 5px;
+		background-color: #ff5c5c;
+		color: #fff;
+		border: none;
+		border-radius: 50%;
+		padding: 5px 8px;
+		cursor: pointer;
+		font-size: 14px;
+	}
+
+	.close-button:hover {
+		background-color: #ff1c1c;
+	}
+</style>
+
+<body class="app">
+	<header class="app-header fixed-top">
+		<div class="app-header-inner">
+			<div class="container-fluid py-2">
+				<div class="app-header-content">
+					<div class="row justify-content-between align-items-center">
+
+						<div class="col-auto">
+							<a id="sidepanel-toggler" class="sidepanel-toggler d-inline-block d-xl-none" href="#">
+								<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30"
+									role="img">
+									<title>Menu</title>
+									<path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10"
+										stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path>
+								</svg>
+							</a>
+						</div><!--//col-->
+
+
+
+						<div class="app-utilities col-auto">
+							<div class="app-utility-item app-notifications-dropdown dropdown">
+
+
+
+							</div><!--//app-utility-item-->
+
+							<div class="app-utility-item app-user-dropdown dropdown">
+								<a class="dropdown-toggle" id="user-dropdown-toggle" data-bs-toggle="dropdown" href="#"
+									role="button" aria-expanded="false"><img src="assets/images/user.png"
+										alt="user profile"></a>
+								<ul class="dropdown-menu" aria-labelledby="user-dropdown-toggle">
+									<ul class="dropdown-menu" aria-labelledby="user-dropdown-toggle">
+
+										<li><a href="#" id="logout-btn" class="dropdown-item" href="login.html">Log
+												Out</a></li>
+
+									</ul>
+								</ul>
+							</div><!--//app-user-dropdown-->
+						</div><!--//app-utilities-->
+					</div><!--//row-->
+				</div><!--//app-header-content-->
+			</div><!--//container-fluid-->
+		</div><!--//app-header-inner-->
+		<div id="app-sidepanel" class="app-sidepanel">
+			<div id="sidepanel-drop" class="sidepanel-drop"></div>
+			<div class="sidepanel-inner d-flex flex-column">
+				<a href="#" id="sidepanel-close" class="sidepanel-close d-xl-none">&times;</a>
+				<div class="app-branding">
+					<a class="app-logo" href="index.html"><img class="logo-icon me-2" src="assets/images/app-logo.svg"
+							alt="logo"><span class="logo-text">ADMIN</span></a>
+
+				</div><!--//app-branding-->
+
+				<nav id="app-nav-main" class="app-nav app-nav-main flex-grow-1">
+					<ul class="app-menu list-unstyled accordion" id="menu-accordion">
+						<li class="nav-item">
+							<!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+							<a class="nav-link" href="index.html">
+								<span class="nav-icon">
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-house-door"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd"
+											d="M7.646 1.146a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 .146.354v7a.5.5 0 0 1-.5.5H9.5a.5.5 0 0 1-.5-.5v-4H7v4a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5v-7a.5.5 0 0 1 .146-.354l6-6zM2.5 7.707V14H6v-4a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v4h3.5V7.707L8 2.207l-5.5 5.5z" />
+										<path fill-rule="evenodd"
+											d="M13 2.5V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z" />
+									</svg>
+								</span>
+								<span class="nav-link-text">Dashboard</span>
+							</a><!--//nav-link-->
+						</li><!--//nav-item-->
+						<li class="nav-item">
+							<!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+							<a class="nav-link" href="maps.html">
+								<span class="nav-icon">
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-folder"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path
+											d="M9.828 4a3 3 0 0 1-2.12-.879l-.83-.828A1 1 0 0 0 6.173 2H2.5a1 1 0 0 0-1 .981L1.546 4h-1L.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3v1z" />
+										<path fill-rule="evenodd"
+											d="M13.81 4H2.19a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4zM2.19 3A2 2 0 0 0 .198 5.181l.637 7A2 2 0 0 0 2.826 14h10.348a2 2 0 0 0 1.991-1.819l.637-7A2 2 0 0 0 13.81 3H2.19z" />
+									</svg>
+								</span>
+								<span class="nav-link-text">Maps</span>
+							</a><!--//nav-link-->
+						</li><!--//nav-item-->
+
+						<li class="nav-item has-submenu">
+							<a class="nav-link submenu-toggle active" href="#" data-bs-toggle="collapse"
+								data-bs-target="#submenu-1" aria-expanded="true" aria-controls="submenu-1">
+								<span class="nav-icon">
+									<!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-files"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd"
+											d="M4 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4z" />
+										<path
+											d="M6 0h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2v-1a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1H4a2 2 0 0 1 2-2z" />
+									</svg>
+								</span>
+								<span class="nav-link-text">Collection Request</span>
+								<span class="submenu-arrow">
+									<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-down"
+										fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+										<path fill-rule="evenodd"
+											d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+									</svg>
+								</span><!--//submenu-arrow-->
+
+							</a><!--//nav-link-->
+							<div id="submenu-1" class="collapse submenu submenu-1 show"
+								data-bs-parent="#menu-accordion">
+								<ul class="submenu-list list-unstyled">
+									<li class="submenu-item"><a class="submenu-link" href="approve.html">Approval
+											Request</a></li>
+									<li class="submenu-item"><a class="submenu-link active" href="logs.html">Logs</a>
+									</li>
+								</ul>
+							</div>
+						</li><!--//nav-item-->
+						<li class="nav-item has-submenu"></li>
+						<a class="nav-link submenu-toggle" href="#" data-bs-toggle="collapse"
+							data-bs-target="#submenu-2" aria-expanded="false" aria-controls="submenu-2">
+							<span class="nav-icon">
+								<!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+								<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-files"
+									fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+									<path fill-rule="evenodd"
+										d="M4 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4z" />
+									<path
+										d="M6 0h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2v-1a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1H4a2 2 0 0 1 2-2z" />
+								</svg>
+							</span>
+							<span class="nav-link-text">Collection Point</span>
+							<span class="submenu-arrow">
+								<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-down"
+									fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+									<path fill-rule="evenodd"
+										d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+								</svg>
+							</span><!--//submenu-arrow-->
+
+						</a><!--//nav-link-->
+						<div id="submenu-2" class="collapse submenu submenu-2" data-bs-parent="#menu-accordion">
+							<ul class="submenu-list list-unstyled">
+								<li class="submenu-item"><a class="submenu-link" href="getcurrentstatus.html">Current
+										Status</a></li>
+								<li class="submenu-item"><a class="submenu-link" href="addcollection.html">Add
+										Collection Point</a></li>
+							</ul>
+						</div>
+						</li><!--//nav-item-->
+						<li class="nav-item has-submenu"></li>
+						<a class="nav-link submenu-toggle" href="#" data-bs-toggle="collapse"
+							data-bs-target="#submenu-3" aria-expanded="false" aria-controls="submenu-3">
+							<span class="nav-icon">
+								<!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+								<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-files"
+									fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+									<path fill-rule="evenodd"
+										d="M4 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4z" />
+									<path
+										d="M6 0h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2v-1a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1H4a2 2 0 0 1 2-2z" />
+								</svg>
+							</span>
+							<span class="nav-link-text">User</span>
+							<span class="submenu-arrow">
+								<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-down"
+									fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+									<path fill-rule="evenodd"
+										d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+								</svg>
+							</span><!--//submenu-arrow-->
+
+						</a><!--//nav-link-->
+						<div id="submenu-3" class="collapse submenu submenu-3" data-bs-parent="#menu-accordion">
+							<ul class="submenu-list list-unstyled">
+								<li class="submenu-item"><a class="submenu-link" href="useraccount.html">Account</a>
+								</li>
+								<li class="submenu-item"><a class="submenu-link" href="userreports.html">Reports</a>
+								</li>
+							</ul>
+						</div>
+						</li><!--//nav-item-->
+						<li class="nav-item has-submenu"></li>
+						<a class="nav-link submenu-toggle" href="#" data-bs-toggle="collapse"
+							data-bs-target="#submenu-4" aria-expanded="false" aria-controls="submenu-4">
+							<span class="nav-icon">
+								<!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+								<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-files"
+									fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+									<path fill-rule="evenodd"
+										d="M4 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4z" />
+									<path
+										d="M6 0h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2v-1a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1H4a2 2 0 0 1 2-2z" />
+								</svg>
+							</span>
+							<span class="nav-link-text">Collector</span>
+							<span class="submenu-arrow">
+								<svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-down"
+									fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+									<path fill-rule="evenodd"
+										d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z" />
+								</svg>
+							</span><!--//submenu-arrow-->
+
+						</a><!--//nav-link-->
+						<div id="submenu-4" class="collapse submenu submenu-4" data-bs-parent="#menu-accordion">
+							<ul class="submenu-list list-unstyled">
+								<li class="submenu-item"><a class="submenu-link" href="addcollector.html">Account</a>
+								</li>
+								<li class="submenu-item"><a class="submenu-link"
+										href="collectorschedule.html">Schedule</a></li>
+							</ul>
+						</div>
+						</li><!--//nav-item-->
+					</ul><!--//app-menu-->
+				</nav><!--//app-nav-->
+			</div><!--//sidepanel-inner-->
+		</div><!--//app-sidepanel-->
+	</header><!--//app-header-->
+
+	<div class="app-wrapper">
+		<div class="app-content pt-3 p-md-3 p-lg-4">
+			<div class="container-xl">
+				<div class="row g-3 mb-4 align-items-center justify-content-between">
+					<div class="col-auto">
+						<h1 class="app-page-title mb-0">Logs</h1>
+					</div>
+					<div class="col-auto">
+						<select id="report-type" class="form-select me-2 mt-3 mb-3">
+							<option value="CP1">CP1</option>
+							<option value="CP2">CP2</option>
+							<option value="All">All</option>
+						</select>
+						<button id="generate-report-button" class="btn btn-primary">Generate Report</button>
+					</div>
+				</div>
+				<nav id="logs-table-tab" class="logs-table-tab app-nav-tabs nav shadow-sm flex-column flex-sm-row mb-4">
+					<a class="flex-sm-fill text-sm-center nav-link active" id="logs-all-tab" data-bs-toggle="tab"
+						href="#logs-all" role="tab" aria-controls="logs-all" aria-selected="true">All</a>
+					<a class="flex-sm-fill text-sm-center nav-link" id="logs-emptied-tab" data-bs-toggle="tab"
+						href="#logs-emptied" role="tab" aria-controls="logs-emptied" aria-selected="false">Emptied</a>
+					<a class="flex-sm-fill text-sm-center nav-link" id="logs-full-tab" data-bs-toggle="tab"
+						href="#logs-full" role="tab" aria-controls="logs-full" aria-selected="false">Full</a>
+				</nav>
+	
+				<div class="tab-content" id="logs-table-tab-content">
+					<div id="image-popup" class="popup-overlay" onclick="closeImagePopup()">
+						<div class="popup-content" onclick="event.stopPropagation()">
+							<button class="close-button" onclick="closeImagePopup()">X</button>
+							<img id="popup-image" src="" alt="Log Image" />
+						</div>
+					</div>
+	
+					<!-- All Logs Tab -->
+					<div class="tab-pane fade show active" id="logs-all" role="tabpanel" aria-labelledby="logs-all-tab">
+						<div class="app-card app-card-orders-table shadow-sm mb-5">
+							<div class="app-card-body">
+								<div class="table-responsive">
+									<table class="table app-table-hover mb-0 text-left">
+										<thead>
+											<tr>
+												<th class="cell">Collection Point ID</th>
+												<th class="cell">Location</th>
+												<th class="cell">Image Source</th>
+												<th class="cell">Date and Time</th>
+												<th class="cell">Status</th>
+											</tr>
+										</thead>
+										<tbody>
+											<!-- Dynamic data will be populated here -->
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+	
+					<!-- Emptied Logs Tab -->
+					<div class="tab-pane fade" id="logs-emptied" role="tabpanel" aria-labelledby="logs-emptied-tab">
+						<div class="app-card app-card-orders-table mb-5">
+							<div class="app-card-body">
+								<div class="table-responsive">
+									<table class="table mb-0 text-left">
+										<thead>
+											<tr>
+												<th class="cell">Collection Point ID</th>
+												<th class="cell">Location</th>
+												<th class="cell">Image Source</th>
+												<th class="cell">Date and Time</th>
+												<th class="cell">Status</th>
+											</tr>
+										</thead>
+										<tbody>
+											<!-- Dynamic data will be populated here -->
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+	
+					<!-- Full Logs Tab -->
+					<div class="tab-pane fade" id="logs-full" role="tabpanel" aria-labelledby="logs-full-tab">
+						<div class="app-card app-card-orders-table mb-5">
+							<div class="app-card-body">
+								<div class="table-responsive">
+									<table class="table mb-0 text-left">
+										<thead>
+											<tr>
+												<th class="cell">Collection Point ID</th>
+												<th class="cell">Location</th>
+												<th class="cell">Image Source</th>
+												<th class="cell">Date and Time</th>
+												<th class="cell">Status</th>
+											</tr>
+										</thead>
+										<tbody>
+											<!-- Dynamic data will be populated here -->
+										</tbody>
+									</table>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+
+	<!-- Add Bootstrap JS and dependencies -->
+	<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+
+	<script>
+		// Initialize Supabase client
+		const { createClient } = supabase;
+		const _supabase = createClient('https://uiciowpyxfawjvaddivu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY2lvd3B5eGZhd2p2YWRkaXZ1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNzE0MDQyMCwiZXhwIjoyMDQyNzE2NDIwfQ.kR8PsVyqtW0QTJoFjFq6aiXU-iq0y3alXfJQIRMVgBw');
+
+		async function fetchHistoryLogs() {
+			const { data: historyData, error } = await _supabase
+				.from('history')
+				.select('id, cp_name, image_url, status, collector_name, confirmation_time')
+				.order('confirmation_time', { ascending: false });
+
+			if (error) {
+				console.error('Error fetching history data:', error);
+				return;
+			}
+
+			for (let log of historyData) {
+				const { data: cpData, error: cpError } = await _supabase
+					.from('collection_point')
+					.select('cp_address')
+					.eq('cp_name', log.cp_name)
+					.single();
+
+				if (cpError) {
+					console.error(`Error fetching collection point address for ${log.cp_name}:`, cpError);
+					continue;
+				}
+
+				log.cp_address = cpData ? cpData.cp_address : 'N/A';
+			}
+
+			populateHistoryTable(historyData);
+		}
+
+		function populateHistoryTable(historyData) {
+			const allLogsTable = document.querySelector('#logs-all tbody');
+			const emptiedLogsTable = document.querySelector('#logs-emptied tbody');
+			const fullLogsTable = document.querySelector('#logs-full tbody');
+
+			allLogsTable.innerHTML = '';
+			emptiedLogsTable.innerHTML = '';
+			fullLogsTable.innerHTML = '';
+
+			historyData.forEach(log => {
+				const confirmationDate = new Date(log.confirmation_time);
+				const formattedDate = confirmationDate.toLocaleDateString();
+				const formattedTime = confirmationDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+				const statusClass = log.status === 'emptied' ? 'bg-success' : 'bg-danger';
+
+				const tableRow = `
+					<tr>
+						<td class="cell">${log.cp_name}</td>
+						<td class="cell">${log.cp_address}</td>
+						<td class="cell"><button class="view-button" onclick="openImagePopup('${log.image_url}')">VIEW</button></td>
+						<td class="cell"><span>${formattedDate}</span><span class="note">${formattedTime}</span></td>
+						<td class="cell"><span class="badge ${statusClass}">${log.status.charAt(0).toUpperCase() + log.status.slice(1)}</span></td>
+					</tr>
+				`;
+
+				allLogsTable.innerHTML += tableRow;
+
+				if (log.status === 'emptied') {
+					emptiedLogsTable.innerHTML += tableRow;
+				} else if (log.status === 'full') {
+					fullLogsTable.innerHTML += tableRow;
+				}
+			});
+		}
+
+		// Function to open the image popup
+		function openImagePopup(imageUrl) {
+			const popup = document.getElementById('image-popup');
+			const popupImage = document.getElementById('popup-image');
+
+			popupImage.src = imageUrl;
+			popup.style.display = 'flex';
+		}
+
+		// Function to close the image popup
+		function closeImagePopup() {
+			const popup = document.getElementById('image-popup');
+			popup.style.display = 'none';
+		}
+
+
+		document.addEventListener('DOMContentLoaded', fetchHistoryLogs);
+	</script>
+	<script>
+		// Ensure jsPDF is available
+		const { jsPDF } = window.jspdf;
+	
+		// Function to generate PDF report
+async function generateReport() {
+    const reportType = document.getElementById('report-type').value;
+
+    if (!reportType) {
+        alert('Please select a report type.');
+        return;
+    }
+
+    // Fetch relevant data based on the report type
+    let { data: reportData, error } = await _supabase
+        .from('history')
+        .select('cp_name, status, confirmation_time');
+
+    if (error) {
+        console.error('Error fetching history data for report:', error);
+        alert('Failed to fetch data for the report.');
+        return;
+    }
+
+    // Filter data based on the report type
+    if (reportType === 'CP1' || reportType === 'CP2') {
+        reportData = reportData.filter(log => log.cp_name === reportType);
+    }
+    // 'All' requires no filtering
+
+    if (reportData.length === 0) {
+        alert('No data available for the selected report type.');
+        return;
+    }
+
+    // Initialize jsPDF
+    const doc = new jsPDF();
+
+    // Add Report Title
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text('Waste Collection Report', 14, 22);
+
+    // Add Report Type
+    doc.setFontSize(12);
+    const reportTitle = `Report Type: ${reportType}`;
+    doc.text(reportTitle, 14, 30);
+
+    // Add current date
+    const currentDate = new Date().toLocaleString();
+    doc.text(`Generated on: ${currentDate}`, 14, 36);
+
+    // Prepare table headers
+    const headers = ['Collection Point ID', 'Location', 'Date and Time', 'Status'];
+
+    // Add header styling
+    doc.setTextColor(255, 255, 255);
+    doc.setFillColor(0, 102, 204); // Header background color
+    doc.rect(14, 42, 180, 10, 'F'); // Background for header
+    doc.setTextColor(0); // Reset text color
+    headers.forEach((header, index) => {
+        doc.text(header, 14 + index * 45, 47); // Adjust index for alignment
+    });
+
+    let startY = 57; // Start position for table data
+
+    // Add each row to the table
+    for (const row of reportData) {
+        // Fetch collection point address
+        const { data: cpData, error: cpError } = await _supabase
+            .from('collection_point')
+            .select('cp_address')
+            .eq('cp_name', row.cp_name)
+            .single();
+
+        const location = cpError ? 'N/A' : cpData.cp_address;
+
+        doc.text(row.cp_name, 14, startY);
+        doc.text(location, 59, startY); // Adjusted for alignment
+        doc.text(new Date(row.confirmation_time).toLocaleString(), 104, startY); // Adjusted position
+        doc.text(row.status.charAt(0).toUpperCase() + row.status.slice(1), 164, startY); // Adjusted position
+
+        startY += 30; // Adjust Y position for next row
+        if (startY > 260) { // Add new page if exceeding page height
+            doc.addPage();
+            startY = 20;
+        }
+    }
+
+    // Save the PDF
+    doc.save(`Waste_Collection_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
+// Attach event listener to the generate report button
+document.getElementById('generate-report-button').addEventListener('click', generateReport);
+
+	</script>
+	
+	
+
+	<script>
+
+		document.getElementById('logout-btn').addEventListener('click', async function () {
+			const { error } = await _supabase.auth.signOut();
+			if (error) {
+				console.error('Error logging out:', error.message);
+				alert('Logout failed. Please try again.');
+			} else {
+				localStorage.removeItem('supabase.auth.token');
+				window.location.href = '../user/login.html';
+				console.log("User logged out successfully");
+			}
+		});
+
+	</script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

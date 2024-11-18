@@ -1,0 +1,398 @@
+
+<!--
+table : user_info
+storage.bucket: images/feedback
+
+note: this is RLS enabled only logged in account can insert images
+
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page</title>
+    <!-- Links -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: 'Arial', sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+        .form-group{
+            color: #093805;
+        }
+        header {
+            border-bottom: 1px solid rgba(0, 100, 0, 0.6);
+            position: relative;
+            z-index: 10;
+        }
+
+        .image-background {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            z-index: 0;
+            height: 100%;
+            width: auto;
+            opacity: 0.7;
+        }
+
+        /* Navigation Styling */
+        nav ul {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+
+        nav ul li {
+            list-style: none;
+        }
+
+        nav ul li a {
+            position: relative;
+            color: #444;
+            font-size: 18px;
+            padding: 8px 16px;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        nav ul li a:hover {
+            color: #006400;
+        }
+
+        nav ul li a::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            bottom: -5px;
+            left: 0;
+            background-color: #006400;
+            visibility: hidden;
+            transform: scaleX(0);
+            transition: all 0.3s ease-in-out;
+        }
+
+        nav ul li a:hover::before {
+            visibility: visible;
+            transform: scaleX(1);
+        }
+
+        /* Glassmorphism Effect */
+        .card {
+            background: rgba(11, 100, 63, 0.1);
+            border-radius: 15px;
+            margin-top: 30px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0px 8px 32px rgba(0, 128, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .card-header h5 {
+            color: #006400;
+            font-weight: bold;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .card .form-control,
+        .card .form-control-file {
+            padding: 10px;
+            background: rgba(163, 243, 176, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #093805;
+            backdrop-filter: blur(5px);
+        }
+
+        .get-started-btn {
+            background: linear-gradient(145deg, #a8d5ba, #6d9c76);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0px 8px 15px rgba(0, 128, 0, 0.2);
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .get-started-btn:hover {
+            background-color: rgba(0, 100, 0, 0.7);
+            color: #ffffff;
+            transform: translateY(-5px);
+            box-shadow: 0px 15px 20px rgba(0, 100, 0, 0.4);
+        }
+
+        @keyframes floatImage {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        /* Center the navigation list */
+        nav ul {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+
+        nav ul li {
+            list-style: none;
+        }
+
+        /* Add hover effect for the list items */
+        nav ul li a {
+            position: relative;
+            color: #444;
+            font-size: 18px;
+            padding: 8px 16px;
+            transition: color 0.3s;
+            text-decoration: none;
+        }
+
+        nav ul li a:hover {
+            color: #006400;
+        }
+
+        nav ul li a::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            bottom: -5px;
+            left: 0;
+            background-color: #006400;
+            visibility: hidden;
+            transform: scaleX(0);
+            transition: all 0.3s ease-in-out;
+        }
+
+        nav ul li a:hover::before {
+            visibility: visible;
+            transform: scaleX(1);
+        }
+
+       
+        .nav-link.active:hover {
+            background-color: #28a745; /* Keep the same background color as active state */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add a subtle shadow on hover */
+        }
+
+        .nav-link {
+            color: #333; /* Default link color */
+            padding: 6px 15px; /* Add some padding */
+            border-radius: 5px; /* Rounded corners for the links */
+            transition: background-color 0.3s; /* Smooth background color change */
+        }
+
+        .nav-link:hover {
+            background-color: #28a745; /* Green background on hover */
+            color: white; /* Change text color on hover */
+        }
+
+        .nav-link.active {
+            background-color: #28a745; /* Active tab color */
+            color: white; /* Active tab text color */
+        }
+
+        .nav-link.active:hover {
+            background-color: #28a745; /* Keep the same background color as active state */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add a subtle shadow on hover */
+        }
+
+        .page-title{
+            color: #093805;
+            font-family: 'Courier New', Courier, monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <img src="Trash.png" alt="Solid Waste Management Image" class="image-background">
+    <div class="container">
+        <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4">
+            <div class="col-md-3 mb-2 mb-md-0"></div>
+            <nav class="col-12 col-md-auto mb-2 justify-content-center mb-md-0 mt-3">
+                <ul>
+                    <li><a href="userdashboard.html" class="nav-link">Home</a></li>
+                    <li><a href="MapLanding.html" class="nav-link">Maps</a></li>
+                    <li><a href="profile.html" class="nav-link">Profile</a></li>
+                    <li><a href="binstatus.html" class="nav-link">Bin Status</a></li>
+                    <li><a href="realtime.html" class="nav-link ">Realtime Status</a></li>
+                    <li><a href="#" class="nav-link active">Report</a></li>
+                    <li><a href="../index.html" class="nav-link">Log out</a></li>
+                </ul>
+            </nav>
+        </header>
+
+<!-- Report Issue Form Section -->
+<h1 class="page-title">Report Issue</h1>
+<div class="card text-white">
+    <div class="card-header">
+        <h5>Submit a Report</h5>
+    </div>
+    <div class="card-body">
+        <form id="reportForm">
+            <div class="form-group">
+                <label for="collectionPoint">Collection Point:</label>
+                <select class="form-control" id="collectionPoint" required>
+                    <option value="">Select a Collection Point</option>
+                </select>
+            </div>
+            <div class="form-row mb-3">
+                <div class="form-group col-md-6">
+                    <label for="report">Report:</label>
+                    <textarea class="form-control" id="report" rows="4" placeholder="Describe your issue here" required></textarea>
+                </div>
+            </div>
+            <br>
+            <div class="form-group">
+                <label for="attachment">Attach Image:</label>
+                <input type="file" class="form-control-file" id="attachment" accept="image/*">
+            </div>
+            <button type="submit" class="get-started-btn">Submit Feedback</button>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<script>
+const { createClient } = supabase;
+const _supabase = createClient('https://uiciowpyxfawjvaddivu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY2lvd3B5eGZhd2p2YWRkaXZ1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNzE0MDQyMCwiZXhwIjoyMDQyNzE2NDIwfQ.kR8PsVyqtW0QTJoFjFq6aiXU-iq0y3alXfJQIRMVgBw', {
+});
+    document.addEventListener('DOMContentLoaded', async function() {
+
+        const { data, error } = await _supabase.auth.getSession();
+        const session = data?.session;
+        let session_username = '';
+   
+    
+    if (error || !session) {
+        console.error('Error fetching session or no session found:', error);
+        window.location.href = '../index.html';
+        return;
+    } else {
+        console.log('Session fetched successfully:', session);
+        
+        const userId = session.user.id;
+        const { data: userRoles, error: roleError } = await _supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', userId)
+            .single();
+        console.log(userRoles);
+
+        const { data: userInfo, error: userInfoError } = await _supabase
+            .from('user_info')
+            .select('*')
+            .eq('auth_id', userId);
+       
+            session_username = userInfo[0].first_name + ' ' + userInfo[0].last_name;
+            session_email = userInfo[0].email;
+
+        populateCollectionPoints();
+    }
+
+
+
+    async function populateCollectionPoints() {
+        const { data: collectionPoints, error } = await _supabase
+            .from('collection_point')
+            .select('id, cp_name')
+            .eq('cp_add_state', 'yes')
+            .order('id', {ascending: true});
+            
+        if (error) {
+            console.error('Error fetching collection points:', error);
+            return;
+        }
+        
+        console.log('Collection points:', collectionPoints);
+        const dropdown = document.getElementById('collectionPoint');
+        collectionPoints.forEach(cp => {
+            const option = document.createElement('option');
+            option.value = cp.cp_name;
+            option.textContent = cp.cp_name;
+            dropdown.appendChild(option);
+        });
+    }
+
+        // Handle form submission
+        document.getElementById('reportForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const collectionPoint = document.getElementById('collectionPoint').value;
+            const report = document.getElementById('report').value;
+            const attachment = document.getElementById('attachment').files[0];
+
+            if (!collectionPoint || !report) {
+                Swal.fire('Error', 'Please fill all required fields!', 'error');
+                return;
+            }
+
+            let imgUrl = '';
+            if (attachment) {
+                const { data: uploadData, error: uploadError } = await _supabase
+                    .storage
+                    .from('images')
+                    .upload(`feedback/${Date.now()}_${attachment.name}`, attachment);
+
+                if (uploadError) {
+                    console.error('Error uploading file:', uploadError);
+                    Swal.fire('Error', 'File upload failed!', 'error');
+                    return;
+                }
+
+                imgUrl = uploadData.path;
+            }
+            
+
+            // Insert feedback data into the userfeedback table
+            const { data: feedbackData, error: feedbackError } = await _supabase
+                .from('userfeedback')
+                .insert({
+                    username: session_username,  
+                    email: session_email ,
+                    feedback: report,
+                    img_fb: imgUrl ? `https://uiciowpyxfawjvaddivu.supabase.co/storage/v1/object/public/images/${imgUrl}` : null,
+                    cp_name: collectionPoint
+                });
+
+            if (feedbackError) {
+                console.error('Error submitting feedback:', feedbackError);
+                Swal.fire('Error', 'Could not submit feedback!', 'error');
+            } else {
+                Swal.fire('Success', 'Feedback submitted successfully!', 'success');
+                document.getElementById('reportForm').reset();
+            }
+        });
+
+
+});
+</script>
+</body>
+
+</html>

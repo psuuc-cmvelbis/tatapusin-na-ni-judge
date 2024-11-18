@@ -1,0 +1,175 @@
+<!--
+
+login.html
+	INPUT : username, password
+	checkSession if (true) THEN
+		checkRole if (role == collector) THEN
+        collectorDashboard
+        elif  (role == user) THEN
+        collectorDashboard
+        else 
+        forward to login.html
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="../CSS/login.css">
+</head>
+<body>
+     <div class="background-image"></div>
+
+     <body>
+        <div class="glass-container">
+            <h2>Login</h2>
+            <form id="login-form">
+                <div>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
+                </div>
+                <div>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+    
+            <p><a href="forgot-password.html" id="forgot-password-link" style="text-decoration: none;">Forgot Password?</a></p>
+        </div>
+    <script>
+  			const { createClient } = supabase;
+			const _supabase = createClient('https://uiciowpyxfawjvaddivu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY2lvd3B5eGZhd2p2YWRkaXZ1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNzE0MDQyMCwiZXhwIjoyMDQyNzE2NDIwfQ.kR8PsVyqtW0QTJoFjFq6aiXU-iq0y3alXfJQIRMVgBw', {
+	auth: {
+		autoRefreshToken: true, 
+		persistSession: true    
+    }
+	});
+     
+    document.addEventListener('DOMContentLoaded', async function() {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) {
+        console.log("no active session")
+    } else {
+        // Session check
+        const userId = session.user.id;
+        const { data: userRoles, error: roleError } = await _supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', userId)
+            .single();
+
+        if (roleError) {
+            console.error('Error fetching user role:', roleError.message);
+            alert('Failed to fetch user role.');
+            return;
+        }
+
+        const userRole = userRoles.role;
+
+        if (userRole === 'collector') {
+            // Load collector-specific content
+            loadCollectorDashboard();
+        } else if (userRole === 'user') {
+            // Load user-specific content
+            loadUserDashboard();
+        } else {
+            alert('Unrecognized role. Please contact support.');
+        }   
+    }
+});
+
+        function loadCollectorDashboard() {
+            // Function to load collector-specific dashboard content
+            console.log('Loading collector dashboard');
+
+        }
+
+        function loadUserDashboard() {
+            // Function to load user-specific dashboard content
+            console.log('Loading user dashboard');
+            window.location.href = './udashboard/userdashboard.html'; // Redirect to user dashboard
+        
+        }
+        // Handle form submission for login
+        document.getElementById('login-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            // Authenticate the user
+            const { data: loginData, error: loginError } = await _supabase.auth.signInWithPassword({ email, password });
+
+            if (loginError) {
+                console.error('Error logging in:', loginError.message);
+                alert('Login failed. Please check your credentials.');
+                return;
+            }
+
+            // Get the user ID from the authenticated user
+            const userId = loginData.user.id;
+
+            // Fetch the user role from the user_roles table
+            const { data: userRoles, error: roleError } = await _supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', userId)
+                .single();
+
+            if (roleError) {
+                console.error('Error fetching user role:', roleError.message);
+                alert('Failed to fetch user role.');
+                return;
+            }
+
+            // Check role and redirect accordingly
+            const userRole = userRoles.role;
+            if (userRole === 'collector') {
+                console.log(userRole);
+                window.location.href = '/collector-dashboard.html'; // Redirect to collector dashboard
+                if (loginData.session) {
+                    localStorage.setItem('supabase.auth.token', JSON.stringify(loginData.session));
+                }
+            } else if (userRole === 'user') {
+                window.location.href = './udashboard/userdashboard.html'; // Redirect to user dashboard
+                if (loginData.session) {
+                        localStorage.setItem('supabase.auth.token', JSON.stringify(loginData.session));
+                    }
+                console.log(userRole);
+            } else {
+                alert('Role not recognized.');
+            }
+        });
+
+
+
+
+        // Show the forgot password form
+        document.getElementById('forgot-password-link').addEventListener('click', function () {
+            document.getElementById('forgot-password-form').style.display = 'block';
+        });
+
+        // Handle forgot password form submission
+        document.getElementById('forgot-password').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById('reset-email').value;
+
+            // Send password reset email
+            const { data, error } = await _supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: 'http://localhost/collectionpoint/reset-password.html' // Redirect URL for resetting the password
+            });
+
+            if (error) {
+                console.error('Error sending reset email:', error.message);
+                alert('Failed to send reset email. Please try again.');
+            } else {
+                alert('Password reset email sent! Please check your inbox.');
+            }
+        });
+    </script>
+    
+</body>
+</html>

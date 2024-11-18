@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Solid Waste Urdaneta Portal Sign Up</title>
+    
+    <!-- Meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta name="description" content="Portal - Bootstrap 5 Admin Dashboard Template For Developers">
+    <meta name="author" content="Xiaoying Riley at 3rd Wave Media">    
+    <link rel="shortcut icon" href="favicon.ico"> 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script defer src="assets/plugins/fontawesome/js/all.min.js"></script>
+    
+    <!-- App CSS -->  
+    <link id="theme-style" rel="stylesheet" href="assets/css/portal.css">
+
+    <!-- SweetAlert CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" href="../CSS/signup.css">
+    
+    
+</head> 
+
+<body class="app app-signup p-0">     
+    <div class="background-image"></div> 
+
+    <div class="form-box">
+        <div class="app-auth-body mx-auto">  
+            <h2 class="auth-heading text-center mb-4">Create Account</h2>                    
+
+            <div class="auth-form-container text-start mx-auto">
+                <form class="auth-form auth-signup-form" id="MainForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <input id="firstnameInp" name="signup-fname" type="text" class="form-control signup-name" placeholder="First name" required="required">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <input id="secondnameInp" name="signup-lname" type="text" class="form-control signup-name" placeholder="Last name" required="required">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <input id="phoneInp" name="signup-phoneNum" type="text" class="form-control signup-name" placeholder="Phone Number" required="required">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <input id="emailInp" name="signup-email" type="email" class="form-control signup-email" placeholder="Email" required="required">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <input id="passwordInp" name="signup-password" type="password" class="form-control signup-password" placeholder="Create a password" required="required">
+                        </div>
+                    </div>
+                    <div class="extra mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="RememberPassword" required>
+                            <label class="form-check-label" for="RememberPassword">
+                            I agree to Portal's <a href="terms.html" class="app-link text-link">Terms of Service</a> and <a href="privacy.html" class="app-link text-link">Privacy Policy</a>.
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="btn app-btn-primary w-100 theme-btn mx-auto">Create</button>
+                    </div>
+                </form>
+                
+                <div class="auth-option text-center pt-5">Already have an account? <a class="text-link" href="login.html" >Log in</a></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+   <script>
+   document.addEventListener("DOMContentLoaded", function () {
+    const { createClient } = supabase;
+        const _supabase = createClient('https://uiciowpyxfawjvaddivu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY2lvd3B5eGZhd2p2YWRkaXZ1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNzE0MDQyMCwiZXhwIjoyMDQyNzE2NDIwfQ.kR8PsVyqtW0QTJoFjFq6aiXU-iq0y3alXfJQIRMVgBw');
+
+
+    document.getElementById('MainForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const firstName = document.getElementById('firstnameInp').value;
+        const lastName = document.getElementById('secondnameInp').value;
+        const phoneNumber = document.getElementById('phoneInp').value;
+        const email = document.getElementById('emailInp').value;
+        const password = document.getElementById('passwordInp').value;
+
+        try {
+            console.log("Starting user registration process...");
+            console.log("Step 1: Creating user in auth table...");
+            const { data: user, error: authError } = await _supabase.auth.signUp({
+                email: email,
+                password: password,
+            });
+
+            if (authError) {
+                throw new Error(`Error signing up user: ${authError.message}`);
+            }
+            console.log("User created in auth table:", user.user.id);
+            console.log("Step 2: Inserting user info...");
+            const { data: userInfoData, error: userInfoError } = await _supabase
+                .from('user_info')
+                .insert([
+                    { 
+                        first_name: firstName, 
+                        last_name: lastName, 
+                        phone_number: phoneNumber, 
+                        email: email,
+                        auth_id: user.user.id  
+                    }
+                ])
+                .select();
+
+            if (userInfoError) {
+                throw new Error(`Error inserting into user_info: ${userInfoError.message}`);
+            }
+            console.log("User info inserted:", userInfoData);
+
+
+            console.log("Step 3: Inserting user role...");
+            const { data: roleData, error: roleError } = await _supabase
+                .from('user_roles')
+                .insert([
+                    { user_id: user.user.id, role: 'user' } 
+                ]);
+
+            if (roleError) {
+                throw new Error(`Error inserting into user_roles: ${roleError.message}`);
+            }
+            console.log("User role inserted:", roleData);
+
+            Swal.fire({
+                title: 'Success!',
+                text: 'Your account has been created successfully!',
+                icon: 'success',
+            });
+
+            window.location.href = 'login.html';
+
+        } catch (error) {
+            console.error("Registration error:", error);
+            Swal.fire({
+                title: 'Error!',
+                text: error.message,
+                icon: 'error',
+            });
+        }
+    });
+});
+
+    </script>
+</body>
+</html>

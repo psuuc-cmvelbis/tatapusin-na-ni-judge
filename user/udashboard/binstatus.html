@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landing Page</title>
+    <!--Links-->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/user_session.js"></script>
+    <style>
+        body {
+            background-color: #ffffff;
+            /* Light green background */
+            font-family: 'Arial', sans-serif;
+            position: relative;
+
+        }
+
+        header {
+            border-bottom: 1px solid #006400 !important;
+            /* Dark green border */
+            position: relative;
+            z-index: 10;
+        }
+
+        .app-wrapper {
+            width: 100%;
+            /* Full width */
+            max-width: 1200px;
+            /* Max width for larger screens */
+            padding: 20px;
+            /* Padding around the container */
+            background: rgba(255, 255, 255, 0.7);
+            /* White background with transparency */
+            backdrop-filter: blur(15px);
+            /* More blur for glassmorphism effect */
+            border-radius: 20px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+            /* Slightly darker shadow for depth */
+            margin: 20px auto;
+            /* Center the wrapper with margin */
+            height: 800px;
+            /* Adjusted height for the container */
+            overflow: hidden;
+            /* Hide any overflow */
+            position: relative;
+            /* Added position relative */
+            z-index: 1;
+            /* Set z-index lower than the background image */
+        }
+
+        .title-section {
+            text-align: left;
+            margin-top: 50px;
+            margin-left: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .title-section h1 {
+            font-size: 64px;
+            color: #006400;
+            /* Dark green color */
+            font-weight: bold;
+        }
+
+        .title-section p {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        .get-started-btn {
+            margin-top: 300px;
+            border-radius: 90px;
+        }
+
+        .image-background {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            z-index: 0;
+            height: 100%;
+            width: auto;
+            opacity: 0.9;
+        }
+
+        @keyframes floatImage {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        /* Center the navigation list */
+        nav ul {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+
+        nav ul li {
+            list-style: none;
+        }
+
+        /* Add hover effect for the list items */
+        nav ul li a {
+            position: relative;
+            color: #444;
+            font-size: 18px;
+            padding: 8px 16px;
+            transition: color 0.3s;
+            text-decoration: none;
+        }
+
+        nav ul li a:hover {
+            color: #006400;
+        }
+
+        nav ul li a::before {
+            content: "";
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            bottom: -5px;
+            left: 0;
+            background-color: #006400;
+            visibility: hidden;
+            transform: scaleX(0);
+            transition: all 0.3s ease-in-out;
+        }
+
+        nav ul li a:hover::before {
+            visibility: visible;
+            transform: scaleX(1);
+        }
+
+        .btn-success {
+            box-shadow: 0px 8px 15px rgba(0, 100, 0, 0.2);
+        }
+
+        .btn-success:hover {
+            background-color: #004d00;
+            box-shadow: 0px 15px 20px rgba(0, 100, 0, 0.4);
+            transform: translateY(-3px);
+        }
+
+        .get-started-btn {
+            margin-top: 50px;
+            padding: 15px 40px;
+            border-radius: 50px;
+            background-color: #006400;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            box-shadow: 0px 8px 15px rgba(0, 100, 0, 0.2);
+            cursor: pointer;
+            animation: bounce 2s infinite;
+        }
+
+        .get-started-btn:hover {
+            background-color: #004d00;
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0px 15px 20px rgba(0, 100, 0, 0.4);
+        }
+
+        .get-started-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0px 5px 10px rgba(0, 100, 0, 0.3);
+        }
+
+        /* Bounce animation keyframes */
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-10px);
+            }
+
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        .nav-link.active:hover {
+            background-color: #28a745;
+            /* Keep the same background color as active state */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            /* Add a subtle shadow on hover */
+        }
+
+        .nav-link {
+            color: #333;
+            /* Default link color */
+            padding: 6px 15px;
+            /* Add some padding */
+            border-radius: 5px;
+            /* Rounded corners for the links */
+            transition: background-color 0.3s;
+            /* Smooth background color change */
+        }
+
+        .nav-link:hover {
+            background-color: #28a745;
+            /* Green background on hover */
+            color: white;
+            /* Change text color on hover */
+        }
+
+        .nav-link.active {
+            background-color: #28a745;
+            /* Active tab color */
+            color: white;
+            /* Active tab text color */
+        }
+
+        .nav-link.active:hover {
+            background-color: #28a745;
+            /* Keep the same background color as active state */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            /* Add a subtle shadow on hover */
+        }
+
+        .app-page-title {
+            color: #093805;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    padding-top: 60px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.8); /* Black with opacity */
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+    border-radius: 8px;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover, .close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+    </style>
+
+</head>
+
+<body>
+    <img src="Trash.png" alt="Solid Waste Management Image" class="image-background">
+    <div class="container">
+        <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4">
+            <div class="col-md-3 mb-2 mb-md-0"></div>
+            <nav class="col-12 col-md-auto mb-2 justify-content-center mb-md-0 mt-3">
+                <ul>
+                    <li><a href="userdashboard.html" class="nav-link">Home</a></li>
+                    <li><a href="MapLanding.html" class="nav-link">Maps</a></li>
+                    <li><a href="profile.html" class="nav-link">Profile</a></li>
+                    <li><a href="#" class="nav-link active">Bin Status</a></li>
+                    <li><a href="realtime.html" class="nav-link">Realtime Status</a></li>
+                    <li><a href="report.html" class="nav-link">Report</a></li>
+                    <li><a href="../index.html" class="nav-link">Log out</a></li>
+                </ul>
+            </nav>
+        </header>
+    </div>
+    <!-- Modal for expanded image -->
+<div id="imageModal" class="modal" style="display: none;">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <img class="modal-content" id="expandedImage">
+</div>
+
+    <div class="app-wrapper card">
+        <div class="container-xl">
+            <div class="row g-3 mb-4 align-items-center justify-content-between">
+                <div class="col-auto">
+                    <h1 class="app-page-title mb-0">Bin Status</h1>
+                </div>
+            </div><!--//row-->
+            <nav id="bin-status-tabs" class="orders-table-tab app-nav-tabs nav shadow-sm flex-column flex-sm-row mb-4">
+                <a class="flex-sm-fill text-sm-center nav-link active" id="bin-all-tab" data-bs-toggle="tab"
+                    href="#bin-all" role="tab" aria-controls="bin-all" aria-selected="true">All</a>
+                <a class="flex-sm-fill text-sm-center nav-link" id="bin-emptied-tab" data-bs-toggle="tab"
+                    href="#bin-emptied" role="tab" aria-controls="bin-emptied" aria-selected="false">Emptied</a>
+                <a class="flex-sm-fill text-sm-center nav-link" id="bin-full-tab" data-bs-toggle="tab" href="#bin-full"
+                    role="tab" aria-controls="bin-full" aria-selected="false">Full</a>
+            </nav>
+
+            <div class="tab-content" id="bin-status-content">
+                <!-- All Bins Tab -->
+                <div class="tab-pane fade show active" id="bin-all" role="tabpanel" aria-labelledby="bin-all-tab">
+                    <div class="app-card app-card-orders-table shadow-sm mb-5">
+                        <div class="app-card-body">
+                            <div class="table-responsive">
+                                <table class="table app-table-hover mb-0 text-left">
+                                    <thead>
+                                        <tr>
+                                            <th class="cell">Collection Point ID</th>
+                                            <th class="cell">Image Source</th>
+                                            <th class="cell">Date and Time</th>
+                                            <th class="cell">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamic data will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emptied Bins Tab -->
+                <div class="tab-pane fade" id="bin-emptied" role="tabpanel" aria-labelledby="bin-emptied-tab">
+                    <div class="app-card app-card-orders-table mb-5">
+                        <div class="app-card-body">
+                            <div class="table-responsive">
+                                <table class="table mb-0 text-left">
+                                    <thead>
+                                        <tr>
+                                            <th class="cell">Collection Point ID</th>
+                                            <th class="cell">Image Source</th>
+                                            <th class="cell">Date and Time</th>
+                                            <th class="cell">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamic data will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Full Bins Tab -->
+                <div class="tab-pane fade" id="bin-full" role="tabpanel" aria-labelledby="bin-full-tab">
+                    <div class="app-card app-card-orders-table mb-5">
+                        <div class="app-card-body">
+                            <div class="table-responsive">
+                                <table class="table mb-0 text-left">
+                                    <thead>
+                                        <tr>
+                                            <th class="cell">Collection Point ID</th>
+                                            <th class="cell">Image Source</th>
+                                            <th class="cell">Date and Time</th>
+                                            <th class="cell">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Dynamic data will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div><!--//tab-content-->
+        </div><!--//container-xl-->
+    </div><!--//app-wrapper-->
+    <script>
+
+
+        function initializeTabs() {
+            const tabElements = document.querySelectorAll('[data-bs-toggle="tab"]');
+            tabElements.forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const target = document.querySelector(e.target.getAttribute('href'));
+                    document.querySelectorAll('.nav-link').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-pane').forEach(p => {
+                        p.classList.remove('show', 'active');
+                    });
+                    e.target.classList.add('active');
+                    target.classList.add('show', 'active');
+                });
+            });
+        }
+
+        async function fetchHistoryLogs() {
+            const { data: uniqueCPs, error: cpError } = await _supabase
+                .from('collection_point')
+                .select('cp_name');
+
+            if (cpError) {
+                console.error('Error fetching collection points:', cpError);
+                return;
+            }
+            let latestStatuses = [];
+            for (const cp of uniqueCPs) {
+                const { data: latestStatus, error: statusError } = await _supabase
+                    .from('history')
+                    .select('*')
+                    .eq('cp_name', cp.cp_name)
+                    .order('confirmation_time', { ascending: false })
+                    .limit(1)
+                    .single();
+
+                if (statusError) {
+                    console.error(`Error fetching latest status for ${cp.cp_name}:`, statusError);
+                    continue;
+                }
+
+                if (latestStatus) {
+                    latestStatuses.push(latestStatus);
+                }
+            }
+
+            populateHistoryTable(latestStatuses);
+        }
+
+        function populateHistoryTable(historyData) {
+    const allBinsTable = document.querySelector('#bin-all tbody');
+    const emptiedBinsTable = document.querySelector('#bin-emptied tbody');
+    const fullBinsTable = document.querySelector('#bin-full tbody');
+
+    allBinsTable.innerHTML = '';
+    emptiedBinsTable.innerHTML = '';
+    fullBinsTable.innerHTML = '';
+
+    historyData.sort((a, b) => new Date(b.confirmation_time) - new Date(a.confirmation_time));
+
+    historyData.forEach(log => {
+        const confirmationDate = new Date(log.confirmation_time);
+        const formattedDate = confirmationDate.toLocaleDateString();
+        const formattedTime = confirmationDate.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const statusBadgeClass = log.status === 'Emptied' ? 'bg-success' : 'bg-danger';
+
+        const tableRow = `
+            <tr>
+                <td class="cell">${log.cp_name}</td>
+                <td class="cell">
+                    <img src="${log.image_url}" alt="Bin Status Image" 
+                         width="100" height="100" 
+                         style="object-fit: cover; border-radius: 4px; cursor: pointer;" 
+                         onclick="openModal('${log.image_url}')"/>
+                </td>
+                <td class="cell">
+                    <span>${formattedDate}</span>
+                    <span class="note">${formattedTime}</span>
+                </td>
+                <td class="cell">
+                    <span class="badge ${statusBadgeClass}">${log.status}</span>
+                </td>
+            </tr>
+        `;
+
+        allBinsTable.innerHTML += tableRow;
+
+        if (log.status === 'emptied') {
+            emptiedBinsTable.innerHTML += tableRow;
+        } else if (log.status === 'full') {
+            fullBinsTable.innerHTML += tableRow;
+        }
+    });
+
+    updateTabCounts(historyData);
+}
+
+function openModal(imageUrl) {
+    const modal = document.getElementById('imageModal');
+    const expandedImage = document.getElementById('expandedImage');
+    expandedImage.src = imageUrl;
+    modal.style.display = 'block';
+}
+
+function closeModal() {
+    const modal = document.getElementById('imageModal');
+    modal.style.display = 'none';
+}
+
+// Close modal when clicking outside the image
+window.onclick = function(event) {
+    const modal = document.getElementById('imageModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+
+
+        function updateTabCounts(historyData) {
+            const emptiedCount = historyData.filter(log => log.status === 'emptied').length;
+            const fullCount = historyData.filter(log => log.status === 'full').length;
+            const totalCount = historyData.length;
+
+            document.getElementById('bin-all-tab').textContent = `All (${totalCount})`;
+            document.getElementById('bin-emptied-tab').textContent = `Emptied (${emptiedCount})`;
+            document.getElementById('bin-full-tab').textContent = `Full (${fullCount})`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeTabs();
+            fetchHistoryLogs();
+        });
+    </script>
+
+
+</body>
+
+</html>

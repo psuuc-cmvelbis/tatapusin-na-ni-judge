@@ -1,0 +1,165 @@
+<!--
+
+login.html
+	INPUT : username, password
+	checkSession if (true) THEN
+		checkRole if (role == collector) THEN
+        collectorDashboard
+        elif  (role == user) THEN
+        collectorDashboard
+        else 
+        forward to login.html
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h2>Login</h2>
+    <form id="login-form">
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit">Login</button>
+    </form>
+
+    <p><a href="#" id="forgot-password-link">Forgot Password?</a></p>
+
+    <div id="forgot-password-form" style="display: none;">
+        <h3>Reset Your Password</h3>
+        <form id="forgot-password">
+            <div>
+                <label for="reset-email">Enter your email:</label>
+                <input type="email" id="reset-email" name="reset-email" required>
+            </div>
+            <button type="submit">Send Reset Email</button>
+        </form>
+    </div>
+
+    <script>
+  			const { createClient } = supabase;
+			const _supabase = createClient('https://uiciowpyxfawjvaddivu.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVpY2lvd3B5eGZhd2p2YWRkaXZ1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyNzE0MDQyMCwiZXhwIjoyMDQyNzE2NDIwfQ.kR8PsVyqtW0QTJoFjFq6aiXU-iq0y3alXfJQIRMVgBw', {
+	auth: {
+		autoRefreshToken: true, 
+		persistSession: true    
+    }
+	});
+     
+    document.addEventListener('DOMContentLoaded', async function() {
+    const { data: { session } } = await _supabase.auth.getSession();
+    if (!session) {
+        console.log("no active session")
+    } else {
+        // Session check
+        const userId = session.user.id;
+        const { data: userRoles, error: roleError } = await _supabase
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', userId)
+            .single();
+
+        if (roleError) {
+            console.error('Error fetching user role:', roleError.message);
+            alert('Failed to fetch user role.');
+            return;
+        }
+
+        const userRole = userRoles.role;
+
+        if (userRole === 'collector') {
+            loadCollectorDashboard();
+        } else if (userRole === 'user') {
+            loadUserDashboard();
+        } else {
+            alert('Unrecognized role. Please contact support.');
+        }
+    }
+});
+
+        function loadCollectorDashboard() {
+            console.log('Loading collector dashboard');
+
+        }
+
+        function loadUserDashboard() {
+            console.log('Loading user dashboard');
+            window.location.href = 'udashboard/userdashboard.html'; 
+        
+        }
+        document.getElementById('login-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const { data: loginData, error: loginError } = await _supabase.auth.signInWithPassword({ email, password });
+
+            if (loginError) {
+                console.error('Error logging in:', loginError.message);
+                alert('Login failed. Please check your credentials.');
+                return;
+            }
+
+            const userId = loginData.user.id;
+            const { data: userRoles, error: roleError } = await _supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', userId)
+                .single();
+
+            if (roleError) {
+                console.error('Error fetching user role:', roleError.message);
+                alert('Failed to fetch user role.');
+                return;
+            }
+            const userRole = userRoles.role;
+            if (userRole === 'collector') {
+                console.log(userRole);
+                window.location.href = '/collector-dashboard.html'; 
+                if (loginData.session) {
+                    localStorage.setItem('supabase.auth.token', JSON.stringify(loginData.session));
+                }
+            } else if (userRole === 'user') {
+                window.location.href = 'udashboard/userdashboard.html';
+                if (loginData.session) {
+                        localStorage.setItem('supabase.auth.token', JSON.stringify(loginData.session));
+                    }
+                console.log(userRole);
+            } else {
+                alert('Role not recognized.');
+            }
+        });
+
+        document.getElementById('forgot-password-link').addEventListener('click', function () {
+            document.getElementById('forgot-password-form').style.display = 'block';
+        });
+
+        document.getElementById('forgot-password').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById('reset-email').value;
+
+            const { data, error } = await _supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: 'http://localhost/collectionpoint/reset-password.html' 
+            });
+
+            if (error) {
+                console.error('Error sending reset email:', error.message);
+                alert('Failed to send reset email. Please try again.');
+            } else {
+                alert('Password reset email sent! Please check your inbox.');
+            }
+        });
+    </script>
+</body>
+</html>
